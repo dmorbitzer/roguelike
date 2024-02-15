@@ -8,6 +8,9 @@ pub use map::*;
 mod player;
 use player::*;
 mod rect;
+mod visibility_system;
+use visibility_system::VisibilitySystem;
+
 pub use rect::Rect;
 
 
@@ -20,9 +23,9 @@ impl GameState for State {
         ctx.cls();
 
         player_input(self, ctx);
+        self.run_system();
 
-        let map = self.ecs.fetch::<Map>();
-        draw_map(&map, ctx);
+        draw_map(&self.ecs, ctx);
 
         let positions = self.ecs.read_storage::<Position>();
         let renderables = self.ecs.read_storage::<Renderable>();
@@ -30,6 +33,14 @@ impl GameState for State {
         for (pos, render) in (&positions, &renderables).join() {
             ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
         }
+    }
+}
+
+impl State {
+    fn run_system(&mut self) {
+        let mut vis = VisibilitySystem{};
+        vis.run_now(&self.ecs);
+        self.ecs.maintain();
     }
 }
 
@@ -62,6 +73,7 @@ fn main() -> rltk::BError {
             bg: RGB::named(rltk::BLACK),
         })
         .with(Player{})
+        .with(Viewshed{visible_tiles : Vec::new(), range : 8, dirty: true})
         .build();
 
     rltk::main_loop(context, gs)
