@@ -3,12 +3,33 @@
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
 </head>
 <body>
-<canvas id="canvas" width="640" height="480"></canvas>
+<canvas class="game-window" id="canvas" width="640" height="480"></canvas>
 <script src="roguelike.js"></script>
 <script>
     window.addEventListener("load", async () => {
         await wasm_bindgen("./roguelike_bg.wasm");
     });
 </script>
+<p class="game-description">Welcome to my small roguelike game written in RUST</p>
+<p class="game-description">Move by pressing WASD and attack an enemy by running into them</p>
 </body>
+<style>
+    .game-window {
+        padding: 0;
+        margin: auto;
+        display: block;
+        width: 640px;
+    }
+    .game-description {
+        padding-top: 20px;
+        color: azure;
+        width: 640px;
+        display: block;
+        margin: auto;
+        text-align: center;
+    }
+    body {
+        background-color: darkslategrey;;
+    }
+</style>
 </html>
