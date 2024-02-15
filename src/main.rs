@@ -10,30 +10,57 @@ use player::*;
 mod rect;
 mod visibility_system;
 mod monster_ai_system;
+mod map_index_system;
+mod melee_combat_system;
+mod damage_system;
 
 use visibility_system::VisibilitySystem;
 
 pub use rect::Rect;
+use crate::damage_system::DamageSystem;
+use crate::map_index_system::MapIndexingSystem;
+use crate::melee_combat_system::MeleeCombatSystem;
 use crate::monster_ai_system::MonsterAI;
 
 #[derive(PartialEq, Copy, Clone)]
-pub enum RunState { Paused, Running }
+pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn }
 
-struct State{
-    ecs: World,
-    pub runstate: RunState
+struct State {
+    ecs: World
 }
 
 impl GameState for State {
-    fn tick(&mut self, ctx: &mut Rltk) {
-        if self.runstate == RunState::Running {
-            self.run_system();
-            self.runstate = RunState::Paused;
-        } else {
-            self.runstate = player_input(self, ctx);
-        }
+    fn tick(&mut self, ctx : &mut Rltk) {
         ctx.cls();
+        let mut newrunstate;
+        {
+            let runstate = self.ecs.fetch::<RunState>();
+            newrunstate = *runstate;
+        }
 
+        match newrunstate {
+            RunState::PreRun => {
+                self.run_systems();
+                newrunstate = RunState::AwaitingInput;
+            }
+            RunState::AwaitingInput => {
+                newrunstate = player_input(self, ctx);
+            }
+            RunState::PlayerTurn => {
+                self.run_systems();
+                newrunstate = RunState::MonsterTurn;
+            }
+            RunState::MonsterTurn => {
+                self.run_systems();
+                newrunstate = RunState::AwaitingInput;
+            }
+        }
+
+        {
+            let mut runwriter = self.ecs.write_resource::<RunState>();
+            *runwriter = newrunstate;
+        }
+        damage_system::delete_the_dead(&mut self.ecs);
 
         draw_map(&self.ecs, ctx);
 
@@ -43,9 +70,10 @@ impl GameState for State {
 
         for (pos, render) in (&positions, &renderables).join() {
             let idx = map.xy_idx(pos.x, pos.y);
-            if map.visible_tiles[idx] { ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph)}
+            if map.visible_tiles[idx] { ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph) }
         }
     }
+}
 }
 
 impl State {
@@ -55,6 +83,15 @@ impl State {
 
         let mut mob = MonsterAI{};
         mob.run_now(&self.ecs);
+
+        let mut mapindex = MapIndexingSystem{};
+        mapindex.run_now(&self.ecs);
+
+        let mut meleecombatsystem = MeleeCombatSystem{};
+        meleecombatsystem.run_now(&self.ecs);
+
+        let mut damagesystem = DamageSystem{};
+        damagesystem.run_now(&self.ecs);
 
         self.ecs.maintain();
     }
@@ -66,8 +103,7 @@ fn main() -> rltk::BError {
         .build()?;
 
     let mut gs = State{
-        ecs: World::new(),
-        runstate : RunState::Running
+        ecs: World::new()
     };
 
     gs.ecs.register::<Position>();
@@ -76,13 +112,17 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Viewshed>();
     gs.ecs.register::<Monster>();
     gs.ecs.register::<Name>();
+    gs.ecs.register::<BlocksTile>();
+    gs.ecs.register::<CombatStats>();
+    gs.ecs.register::<WantsToMelee>();
+    gs.ecs.register::<SufferDamage>();
 
     // Map Entity
     let map : Map = Map::new_map_rooms_and_corridors();
     let (player_x, player_y) = map.rooms[0].center();
 
     // Player Entity
-    gs.ecs
+    let player_entity = gs.ecs
         .create_entity()
         .with(Position { x: player_x, y: player_y })
         .with(Renderable {
@@ -93,6 +133,7 @@ fn main() -> rltk::BError {
         .with(Player{})
         .with(Viewshed{visible_tiles : Vec::new(), range : 8, dirty: true})
         .with(Name {name: "Player".to_string() })
+        .with( CombatStats{ max_hp: 30, hp: 30, defense: 2, power: 5 })
         .build();
 
     // Monsters
@@ -119,9 +160,13 @@ fn main() -> rltk::BError {
             .with(Viewshed {visible_tiles : Vec::new(), range: 8, dirty: true})
             .with(Monster{})
             .with(Name{ name: format!("{} #{}", &name, i)})
+            .with(BlocksTile {})
+            .with(CombatStats{ max_hp: 16, hp: 16, defense: 1, power: 4 })
             .build();
     }
 
+    gs.ecs.insert(RunState::PreRun);
+    gs.ecs.insert(player_entity);
     gs.ecs.insert(map);
     gs.ecs.insert(Point::new(player_x, player_y));
 

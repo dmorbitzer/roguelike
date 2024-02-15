@@ -1,6 +1,6 @@
-use rltk::{VirtualKeyCode, Rltk, Point};
+use rltk::{VirtualKeyCode, Rltk, Point, console};
 use specs::prelude::*;
-use super::{Position, Player, TileType, State, Map, Viewshed, RunState};
+use super::{Position, Player, TileType, State, Map, Viewshed, RunState, CombatStats, WantsToMelee};
 use std::cmp::{min, max};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
@@ -8,11 +8,24 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut player = ecs.write_storage::<Player>();
     let mut viewshed = ecs.write_storage::<Viewshed>();
     let mut ppos = ecs.write_resource::<Point>();
+    let combat_stats = ecs.read_storage::<CombatStats>();
     let map = ecs.fetch::<Map>();
 
-    for (_player, pos, viewshed) in (&mut player, &mut position, &mut viewshed).join() {
+    let entities = ecs.entities();
+    let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
+
+    for (entity, _player, pos, viewshed) in (&entities, &player, &mut position, &mut viewshed).join() {
+        if pos.x + delta_x < 1 || pos.x + delta_x > map.width-1 || pos.y + delta_y < 1 || pos.y + delta_y > map.height-1 { return; }
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
-        if map.tiles[destination_idx] != TileType::Wall {
+
+        for potential_target in map.tile_content[destination_idx].iter() {
+            let target = combat_stats.get(*potential_target);
+            if let Some(_target) = target {
+                wants_to_melee.insert(entity, WantsToMelee{ target: *potential_target}).expect("Add target failed");
+                return;
+            }
+        }
+        if !map.blocked[destination_idx] {
             pos.x = min(79 , max(0, pos.x + delta_x));
             pos.y = min(49, max(0, pos.y + delta_y));
 
@@ -27,8 +40,9 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
 pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     // Player movement
     match ctx.key {
-        None => {return RunState::Paused}
+        None => {return RunState::AwaitingInput} // No key was pressed
         Some(key) => match key {
+            // Cardinal
             VirtualKeyCode::Left |
             VirtualKeyCode::Numpad4 |
             VirtualKeyCode::A => try_move_player(-1, 0, &mut gs.ecs),
@@ -45,8 +59,21 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             VirtualKeyCode::Numpad2 |
             VirtualKeyCode::S => try_move_player(0, 1, &mut gs.ecs),
 
-            _ => {return RunState::Paused}
+            // Diagonals
+            VirtualKeyCode::Numpad9 |
+            VirtualKeyCode::E => try_move_player(1, -1, &mut gs.ecs),
+
+            VirtualKeyCode::Numpad7 |
+            VirtualKeyCode::Q => try_move_player(-1, -1, &mut gs.ecs),
+
+            VirtualKeyCode::Numpad3 |
+            VirtualKeyCode::C => try_move_player(1, 1, &mut gs.ecs),
+
+            VirtualKeyCode::Numpad1 |
+            VirtualKeyCode::Y => try_move_player(-1, 1, &mut gs.ecs),
+
+            _ => {return RunState::AwaitingInput} // no valid key was pressed
         }
     }
-    RunState::Running
+    RunState::PlayerTurn
 }
