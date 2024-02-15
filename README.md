@@ -20,4 +20,4 @@ A small roguelike game written in Rust
 `cargo build --release --target wasm32-unknown-unknown`
 
 ### Prepare wasm File
-`wasm-bindgen target\wasm32-unknown-unknown\release\yourproject.wasm --out-dir wasm --no-modules --no-typescript`
+`wasm-bindgen target/wasm32-unknown-unknown/release/roguelike.wasm --out-dir wasm --no-modules --no-typescript`
