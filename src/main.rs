@@ -1,6 +1,7 @@
 use rltk::{GameState, Rltk, RGB, RltkBuilder, Point};
 use specs::prelude::*;
 
+mod gui;
 mod components;
 pub use components::*;
 mod map;
@@ -13,6 +14,7 @@ mod monster_ai_system;
 mod map_index_system;
 mod melee_combat_system;
 mod damage_system;
+mod gamelog;
 
 use visibility_system::VisibilitySystem;
 
@@ -25,8 +27,30 @@ use crate::monster_ai_system::MonsterAI;
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn }
 
+
 struct State {
     ecs: World
+}
+
+impl State {
+    fn run_systems(&mut self) {
+        let mut vis = VisibilitySystem{};
+        vis.run_now(&self.ecs);
+
+        let mut mob = MonsterAI{};
+        mob.run_now(&self.ecs);
+
+        let mut mapindex = MapIndexingSystem{};
+        mapindex.run_now(&self.ecs);
+
+        let mut meleecombatsystem = MeleeCombatSystem{};
+        meleecombatsystem.run_now(&self.ecs);
+
+        let mut damagesystem = DamageSystem{};
+        damagesystem.run_now(&self.ecs);
+
+        self.ecs.maintain();
+    }
 }
 
 impl GameState for State {
@@ -72,35 +96,17 @@ impl GameState for State {
             let idx = map.xy_idx(pos.x, pos.y);
             if map.visible_tiles[idx] { ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph) }
         }
-    }
-}
-}
 
-impl State {
-    fn run_system(&mut self) {
-        let mut vis = VisibilitySystem{};
-        vis.run_now(&self.ecs);
-
-        let mut mob = MonsterAI{};
-        mob.run_now(&self.ecs);
-
-        let mut mapindex = MapIndexingSystem{};
-        mapindex.run_now(&self.ecs);
-
-        let mut meleecombatsystem = MeleeCombatSystem{};
-        meleecombatsystem.run_now(&self.ecs);
-
-        let mut damagesystem = DamageSystem{};
-        damagesystem.run_now(&self.ecs);
-
-        self.ecs.maintain();
+        gui::draw_ui(&self.ecs, ctx);
     }
 }
 
 fn main() -> rltk::BError {
-    let context = RltkBuilder::simple80x50()
+    let mut context = RltkBuilder::simple80x50()
         .with_title("Roguelike Tutorial")
         .build()?;
+
+    context.with_post_scanlines(true);
 
     let mut gs = State{
         ecs: World::new()
@@ -168,6 +174,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(RunState::PreRun);
     gs.ecs.insert(player_entity);
     gs.ecs.insert(map);
+    gs.ecs.insert(gamelog::GameLog{ entries : vec!["Welcome to Rusty Roguelike".to_string()] });
     gs.ecs.insert(Point::new(player_x, player_y));
 
     rltk::main_loop(context, gs)

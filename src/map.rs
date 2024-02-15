@@ -3,6 +3,10 @@ use crate::{Player, Rect, Viewshed};
 use std::cmp::{max, min};
 use specs::{Entity, Join, World, WorldExt};
 
+const MAPWIDTH : usize = 80;
+const MAPHEIGHT : usize = 43;
+const MAPCOUNT : usize = MAPWIDTH * MAPWIDTH;
+
 #[derive(PartialEq, Copy, Clone)]
 pub enum TileType {
     Wall,
@@ -113,14 +117,14 @@ impl Map {
 
     pub fn new_map_rooms_and_corridors() -> Map {
         let mut map = Map {
-            tiles : vec![TileType::Wall; 80 * 50],
+            tiles : vec![TileType::Wall; MAPCOUNT],
             rooms : Vec::new(),
-            width : 80,
-            height : 50,
-            revealed_tiles : vec![false; 80 * 50],
-            visible_tiles : vec![false; 80 * 50],
-            blocked : vec![false; 80 * 50],
-            tile_content : vec![Vec::new(); 80*50]
+            width : MAPWIDTH as i32,
+            height : MAPHEIGHT as i32,
+            revealed_tiles : vec![false; MAPCOUNT],
+            visible_tiles : vec![false; MAPCOUNT],
+            blocked : vec![false; MAPCOUNT],
+            tile_content : vec![Vec::new(); MAPCOUNT]
         };
         const MAX_ROOMS: i32 = 30;
         const MIN_SIZE : i32 = 6;
@@ -131,8 +135,8 @@ impl Map {
         for _ in 0..MAX_ROOMS {
             let w = rng.range(MIN_SIZE, MAX_SIZE);
             let h = rng.range(MIN_SIZE, MAX_SIZE);
-            let x = rng.roll_dice(1, 80 - w - 1) - 1;
-            let y = rng.roll_dice(1, 50 - h - 1) - 1;
+            let x = rng.roll_dice(1, MAPWIDTH as i32 - w - 1) - 1;
+            let y = rng.roll_dice(1, MAPHEIGHT as i32 - h - 1) - 1;
             let new_room = Rect::new(x, y, w, h);
             let mut ok = true;
 
@@ -188,7 +192,7 @@ pub fn draw_map(ecs: &World, ctx : &mut Rltk) {
 
         // Move the coordinates
         x += 1;
-        if x > 79 {
+        if x > MAPWIDTH - 1 {
             x = 0;
             y += 1;
         }
