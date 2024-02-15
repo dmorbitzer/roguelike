@@ -106,7 +106,7 @@ fn main() -> rltk::BError {
         .with_title("Roguelike Tutorial")
         .build()?;
 
-    context.with_post_scanlines(true);
+    //context.with_post_scanlines(true);
 
     let mut gs = State{
         ecs: World::new()
