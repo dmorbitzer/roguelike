@@ -3,6 +3,7 @@
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
 </head>
 <body>
+<h2 class="game-description">Welcome to my small roguelike game written in RUST</h2>
 <canvas class="game-window" id="canvas" width="640" height="480"></canvas>
 <script src="roguelike.js"></script>
 <script>
@@ -10,12 +11,19 @@
         await wasm_bindgen("./roguelike_bg.wasm");
     });
 </script>
-<p class="game-description">Welcome to my small roguelike game written in RUST</p>
 <p class="game-description">Move with WASD and attack an enemies by running into them</p>
+<p class="feature-list">Current Features:</p>
+<ul class="feature-list">
+    <li>Random map generation</li>
+    <li>Movement with WASD</li>
+    <li>Melee Combat by running into enemies</li>
+    <li>Enemy AI trying to get to the player and attack</li>
+    <li>Tooltips on hover over enemies</li>
+</ul>
 </body>
 <style>
     .game-window {
-        padding: 0;
+        padding-top: 20px;
         margin: auto;
         display: block;
         width: 640px;
@@ -27,6 +35,12 @@
         display: block;
         margin: auto;
         text-align: center;
+    }
+    .feature-list {
+        padding-top: 20px;
+        color: azure;
+        width: 640px;
+        margin: auto;
     }
     body {
         background-color: darkslategrey;;
