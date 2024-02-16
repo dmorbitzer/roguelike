@@ -9,3 +9,4 @@ edition = "2021"
 rltk = { git = "https://github.com/amethyst/bracket-lib" }
 specs = "0.20.0"
 specs-derive = "0.4.1"
+rand = "0.8.5"
