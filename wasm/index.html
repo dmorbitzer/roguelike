@@ -4,7 +4,9 @@
 </head>
 <body>
 <h2 class="game-description">Welcome to my small roguelike game written in RUST</h2>
-<canvas class="game-window" id="canvas" width="640" height="480"></canvas>
+<div class="game-window-container">
+    <canvas class="game-window" id="canvas" width="640" height="480"></canvas>
+</div>
 <script src="roguelike.js"></script>
 <script>
     window.addEventListener("load", async () => {
@@ -12,6 +14,8 @@
     });
 </script>
 <p class="game-description">Move with WASD and attack an enemies by running into them</p>
+<p class="game-description">Pick up Items with G</p>
+<p class="game-description">Open inventory with I and drop menu with N</p>
 <p class="feature-list">Current Features:</p>
 <ul class="feature-list">
     <li>Random map generation</li>
@@ -19,10 +23,12 @@
     <li>Melee Combat by running into enemies</li>
     <li>Enemy AI trying to get to the player and attack</li>
     <li>Tooltips on hover over enemies</li>
+    <li>Inventory System</li>
+    <li>Drop System</li>
 </ul>
 </body>
 <style>
-    .game-window {
+    .game-window-container {
         padding-top: 20px;
         margin: auto;
         display: block;
