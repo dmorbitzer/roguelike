@@ -2,7 +2,7 @@ use rltk::{VirtualKeyCode, Rltk, Point, console};
 use specs::prelude::*;
 use super::{Position, Player, TileType, State, Map, Viewshed, RunState, CombatStats, WantsToMelee, Item, WantsToPickupItem};
 use std::cmp::{min, max};
-use crate::game_log::GameLog;
+use crate::gamelog::GameLog;
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut position = ecs.write_storage::<Position>();
