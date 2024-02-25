@@ -13,19 +13,37 @@
         await wasm_bindgen("./roguelike_bg.wasm");
     });
 </script>
-<p class="game-description">Move with WASD and attack an enemies by running into them</p>
-<p class="game-description">Pick up Items with G</p>
-<p class="game-description">Open inventory with I and drop menu with N</p>
-<p class="feature-list">Current Features:</p>
-<ul class="feature-list">
-    <li>Random map generation</li>
-    <li>Movement with WASD</li>
-    <li>Melee Combat by running into enemies</li>
-    <li>Enemy AI trying to get to the player and attack</li>
-    <li>Tooltips on hover over enemies</li>
-    <li>Inventory System</li>
-    <li>Drop System</li>
-</ul>
+<div class="container">
+    <div class="explanation left">
+        <h3>Controls</h3>
+        <p>Move with WASD and attack enemies by running into them</p>
+        <p>Pick up Items with G</p>
+        <p>Open inventory with I and drop menu with N</p>
+        <p>Use a magic scroll by left clicking</p>
+    </div>
+    <div class="explanation right">
+        <h3>Items</h3>
+        <p><b>Health Potion</b>: Heals the player</p>
+        <p><b>Magic Missile Scroll</b>: Throw a magic missile at a single target</p>
+        <p><b>Fireball Scroll</b>: Throw a huge fireball at multiple targets</p>
+        <p><b>Confusion Scroll</b>: Confuse a single target</p>
+    </div>
+</div>
+
+<div class="feature-list">
+    <h3>Feature List</h3>
+    <ul>
+        <li>Random map generation</li>
+        <li>Movement with WASD</li>
+        <li>Melee Combat by running into enemies</li>
+        <li>Enemy AI trying to get to the player and attack</li>
+        <li>Tooltips on hover over enemies</li>
+        <li>Inventory System</li>
+        <li>Drop System</li>
+        <li>Magic Scroll System</li>
+        <li>Save and Load System (only Desktop)</li>
+    </ul>
+</div>
 </body>
 <style>
     .game-window-container {
@@ -34,6 +52,7 @@
         display: block;
         width: 640px;
     }
+
     .game-description {
         padding-top: 20px;
         color: azure;
@@ -42,14 +61,35 @@
         margin: auto;
         text-align: center;
     }
+
     .feature-list {
-        padding-top: 20px;
+        margin-top: 10px;
+        padding: 10px;
         color: azure;
-        width: 640px;
-        margin: auto;
+        border: azure solid;
+        h3 {
+            margin-top: 0;
+        }
+    }
+
+    .explanation {
+        width: 40%;
+        color: azure;
+        border: azure solid;
+        margin: 15px;
+        padding: 10px;
+        display: inline-block;
+
+        h3 {
+            margin-top: 0;
+        }
+    }
+
+    .right {
+        float: right;
     }
     body {
-        background-color: darkslategrey;;
+        background-color: darkslategrey;
     }
 </style>
 </html>
