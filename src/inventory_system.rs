@@ -1,6 +1,7 @@
 use specs::prelude::*;
+use crate::map::Map;
 use super::{WantsToPickupItem, Name, InBackpack, Position, gamelog::GameLog, WantsToUseItem,
-            Consumable, ProvidesHealing, CombatStats, WantsToDropItem, InflictsDamage, Map, SufferDamage,
+            Consumable, ProvidesHealing, CombatStats, WantsToDropItem, InflictsDamage, SufferDamage,
             AreaOfEffect, Confusion};
 
 pub struct ItemCollectionSystem {}

@@ -1,8 +1,9 @@
 use rltk::{VirtualKeyCode, Rltk, Point, console};
 use specs::prelude::*;
-use super::{Position, Player, TileType, State, Map, Viewshed, RunState, CombatStats, WantsToMelee, Item, WantsToPickupItem};
+use super::{Position, Player, State, Viewshed, RunState, CombatStats, WantsToMelee, Item, WantsToPickupItem};
 use std::cmp::{min, max};
 use crate::gamelog::GameLog;
+use crate::map::Map;
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut position = ecs.write_storage::<Position>();
@@ -76,6 +77,8 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             VirtualKeyCode::G => get_item(&mut gs.ecs),
             VirtualKeyCode::I => return RunState::ShowInventory,
             VirtualKeyCode::N => return RunState::ShowDropItem,
+
+            VirtualKeyCode::Escape => return RunState::SaveGame,
 
             _ => {return RunState::AwaitingInput} // no valid key was pressed
         }

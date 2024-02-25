@@ -1,6 +1,7 @@
-use rltk::{field_of_view, Point};
+use rltk::{field_of_view};
 use specs::prelude::*;
-use super::{Viewshed, Position, Map, Player};
+use crate::map::Map;
+use super::{Viewshed, Position, Player, Point};
 
 pub struct VisibilitySystem {}
 
